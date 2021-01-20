@@ -16,11 +16,11 @@ export class SwapiPersonCard extends LitElement {
       }
 
       #container {
-        background-color: black;
+        background-color: var(--swapi-blue);
         padding: 25px;
         color: var(--swapi-yellow);
         font: 1.3rem Inconsolata, monospace;
-        text-shadow: 0 0 5px #c8c8c8;
+        text-shadow: 0 0 5px var(--swapi-brown);
         max-width: 599px;
         border-radius: 10px;
       }
@@ -218,7 +218,7 @@ export class SwapiPersonCard extends LitElement {
   }
 
   __renderAttribute(name, loader) {
-    const title = html`<p>${name}: ${this.data[name]}</p>`;
+    const title = html`<p>${name}:</p>`;
     let body = '';
     if (this.data[name]) {
       body = html` ${until(loader(), html`<span>Loading...</span>`)} `;
