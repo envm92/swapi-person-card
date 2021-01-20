@@ -1,6 +1,6 @@
 {
   "name": "swapi-person-card",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/envm92/swapi-person-card.git"
