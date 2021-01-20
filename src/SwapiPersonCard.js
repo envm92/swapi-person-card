@@ -14,7 +14,7 @@ export class SwapiPersonCard extends LitElement {
         background-color: black;
         display: block;
         padding: 25px;
-        color: #fee122;
+        color: var(--swapi-yellow);
         font: 1.3rem Inconsolata, monospace;
         text-shadow: 0 0 5px #c8c8c8;
         max-width: 599px;
@@ -33,7 +33,7 @@ export class SwapiPersonCard extends LitElement {
       }
 
       ::selection {
-        background: #3cbfaf;
+        background: var(--swapi-green);
         text-shadow: none;
       }
     `;
@@ -42,19 +42,35 @@ export class SwapiPersonCard extends LitElement {
   static get properties() {
     return {
       data: { type: Object },
+      idPerson: { type: Number, attribute: 'id-person' },
     };
   }
 
   constructor() {
     super();
-    this.data = {};
+    this.data = null;
+    this.idPerson = 0;
   }
 
-  __loadFromProvider(url) {
+  __loadFromId() {
+    return this.__loadFromProvider('people', this.idPerson).then(res => {
+      console.log('res', res);
+      this.data = res;
+    });
+  }
+
+  __loadData() {
+    if (!this.data) {
+      return this.__loadFromId().then(() => this.__renderData());
+    }
+    return this.__renderData();
+  }
+
+  __loadFromProvider(resourse, idResourse) {
     const shadow = this.shadowRoot;
     const provider = document.createElement('swapi-provider');
-    provider.setAttribute('resourse', url[4]);
-    provider.setAttribute('id-resourse', url[5]);
+    provider.setAttribute('resourse', resourse);
+    provider.setAttribute('id-resourse', idResourse);
     shadow.appendChild(provider);
     return new Promise(res => {
       provider.addEventListener('swapi-response', resProv => {
@@ -73,7 +89,8 @@ export class SwapiPersonCard extends LitElement {
     this[name] = [];
     const promArry = [];
     for (const item of this.data[name]) {
-      promArry.push(this.__loadFromProvider(item.split('/')));
+      const splitUrl = item.split('/');
+      promArry.push(this.__loadFromProvider(splitUrl[4], splitUrl[5]));
     }
     return Promise.all(promArry).then(res => {
       this[name] = res.filter(i => i);
@@ -92,7 +109,8 @@ export class SwapiPersonCard extends LitElement {
           if (this.homeworld) {
             return this.homeworld.name;
           }
-          return this.__loadFromProvider(this.data.homeworld.split('/')).then(
+          const splitUrl = this.data.homeworld.split('/');
+          return this.__loadFromProvider(splitUrl[4], splitUrl[5]).then(
             homeworld => {
               this.homeworld = homeworld;
               return homeworld.name;
@@ -143,6 +161,9 @@ export class SwapiPersonCard extends LitElement {
         break;
       case 'vehicles':
         loader = () => {
+          if (this.data[attribute].length === 0) {
+            return buildTable('', html`<div>none</div>`);
+          }
           return this.__loadTable(attribute).then(() => {
             this.vehiclesTable = buildTable(
               html`
@@ -163,6 +184,9 @@ export class SwapiPersonCard extends LitElement {
         break;
       case 'starships':
         loader = () => {
+          if (this.data[attribute].length === 0) {
+            return buildTable('', html`<div>none</div>`);
+          }
           return this.__loadTable(attribute).then(() => {
             this.starshipsTable = buildTable(
               html`
@@ -224,7 +248,7 @@ export class SwapiPersonCard extends LitElement {
     `;
   }
 
-  render() {
+  __renderData() {
     return html`
       <div id="container">
         <div id="main">
@@ -235,5 +259,9 @@ export class SwapiPersonCard extends LitElement {
         ${this.__render('vehicles')} ${this.__render('starships')}
       </div>
     `;
+  }
+
+  render() {
+    return html` ${until(this.__loadData(), html`<span>Loading...</span>`)} `;
   }
 }
