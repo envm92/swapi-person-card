@@ -1,11 +1,16 @@
 {
   "name": "swapi-person-card",
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/envm92/swapi-person-card.git"
+  },
   "description": "Webcomponent swapi-person-card following open-wc recommendations",
-  "author": "swapi-person-card",
+  "author": "envm92",
   "license": "MIT",
   "main": "index.js",
   "module": "index.js",
+  "type": "module",
   "scripts": {
     "start": "web-dev-server",
     "lint": "eslint --ext .js,.html . --ignore-path .gitignore && prettier \"**/*.js\" --check --ignore-path .gitignore",
