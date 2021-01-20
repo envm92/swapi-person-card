@@ -43,6 +43,7 @@ export class SwapiPersonCard extends LitElement {
     return {
       data: { type: Object },
       idPerson: { type: Number, attribute: 'id-person' },
+      url: { type: String },
     };
   }
 
@@ -52,16 +53,18 @@ export class SwapiPersonCard extends LitElement {
     this.idPerson = 0;
   }
 
-  __loadFromId() {
+  __loadPerson() {
     return this.__loadFromProvider('people', this.idPerson).then(res => {
-      console.log('res', res);
       this.data = res;
     });
   }
 
   __loadData() {
     if (!this.data) {
-      return this.__loadFromId().then(() => this.__renderData());
+      if (this.url) {
+        this.idPerson = +this.url.split('/')[5];
+      }
+      return this.__loadPerson().then(() => this.__renderData());
     }
     return this.__renderData();
   }
