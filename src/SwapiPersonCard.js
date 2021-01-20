@@ -11,14 +11,20 @@ export class SwapiPersonCard extends LitElement {
         --swapi-blue: #211751;
         --swapi-red: #ce0f2c;
         --swapi-brown: #f4dbb3;
-        background-color: black;
         display: block;
+        padding: 10px;
+      }
+
+      #container {
+        background-color: black;
         padding: 25px;
         color: var(--swapi-yellow);
         font: 1.3rem Inconsolata, monospace;
         text-shadow: 0 0 5px #c8c8c8;
         max-width: 599px;
+        border-radius: 10px;
       }
+
       p {
         margin: 0px;
       }
@@ -54,6 +60,9 @@ export class SwapiPersonCard extends LitElement {
   }
 
   __loadPerson() {
+    if (this.idPerson <= 0) {
+      return new Promise(r => r());
+    }
     return this.__loadFromProvider('people', this.idPerson).then(res => {
       this.data = res;
     });
@@ -86,9 +95,6 @@ export class SwapiPersonCard extends LitElement {
   }
 
   __loadTable(name) {
-    if (this[`${name}Table`]) {
-      return this[`${name}Table`];
-    }
     this[name] = [];
     const promArry = [];
     for (const item of this.data[name]) {
@@ -102,16 +108,13 @@ export class SwapiPersonCard extends LitElement {
   }
 
   __render(attribute) {
-    let loader = () => {};
+    let loader;
     const buildTable = (header, rows) => {
       return html` <div class="console-table">${header} ${rows}</div> `;
     };
     switch (attribute) {
       case 'homeworld':
         loader = () => {
-          if (this.homeworld) {
-            return this.homeworld.name;
-          }
           const splitUrl = this.data.homeworld.split('/');
           return this.__loadFromProvider(splitUrl[4], splitUrl[5]).then(
             homeworld => {
@@ -209,13 +212,13 @@ export class SwapiPersonCard extends LitElement {
         };
         break;
       default:
-        loader = () => {};
+        return null;
     }
     return this.__renderAttribute(attribute, loader);
   }
 
   __renderAttribute(name, loader) {
-    const title = html`<p>${name}: ${this.data[name] ? '' : 'unkown'}</p>`;
+    const title = html`<p>${name}: ${this.data[name]}</p>`;
     let body = '';
     if (this.data[name]) {
       body = html` ${until(loader(), html`<span>Loading...</span>`)} `;
@@ -243,7 +246,7 @@ export class SwapiPersonCard extends LitElement {
           <div>EyHaire Color</div>
           <div>${this.data.hair_color}</div>
           <div>Birth Year</div>
-          <div>${this.data.birth_year || 'unkown'}</div>
+          <div>${this.data.birth_year}</div>
           <div>Gender</div>
           <div>${this.data.gender}</div>
         </div>
@@ -252,19 +255,24 @@ export class SwapiPersonCard extends LitElement {
   }
 
   __renderData() {
+    if (!this.data) {
+      return html`<div>person not found</div>`;
+    }
     return html`
-      <div id="container">
-        <div id="main">
-          <p>person:${this.data.name}</p>
-        </div>
-        ${this.__render('homeworld')} ${this.__renderGeneralData()}
-        ${this.__render('films')} ${this.__render('species')}
-        ${this.__render('vehicles')} ${this.__render('starships')}
+      <div id="main">
+        <p>person:${this.data.name}</p>
       </div>
+      ${this.__render('homeworld')} ${this.__renderGeneralData()}
+      ${this.__render('films')} ${this.__render('species')}
+      ${this.__render('vehicles')} ${this.__render('starships')}
     `;
   }
 
   render() {
-    return html` ${until(this.__loadData(), html`<span>Loading...</span>`)} `;
+    return html`
+      <div id="container">
+        ${until(this.__loadData(), html`<span>Loading...</span>`)}
+      </div>
+    `;
   }
 }
